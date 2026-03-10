@@ -1,0 +1,320 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  ADMIN
+  SUPERVISOR
+  SALES
+  DESIGNER
+  ACCOUNTANT
+  OPERATOR
+  CLIENT
+}
+
+enum OrderStatus {
+  NEW
+  REVIEW
+  PRICING
+  APPROVAL
+  DESIGN
+  PRODUCTION
+  QUALITY
+  PACKAGING
+  DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum DeliveryMethod {
+  SHIPPING
+  PICKUP
+}
+
+enum MachineStatus {
+  WORKING
+  MAINTENANCE
+  STOPPED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+model User {
+  id           String    @id @default(cuid())
+  fullName     String
+  email        String    @unique
+  passwordHash String
+  role         RoleCode
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  client       Client?
+  employee     Employee?
+  activities   ActivityLog[]
+}
+
+model Client {
+  id          String    @id @default(cuid())
+  userId      String?   @unique
+  companyName String?
+  name        String
+  email       String?   @unique
+  phone       String?
+  city        String?
+  address     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User?     @relation(fields: [userId], references: [id])
+  orders      Order[]
+  quotes      Quote[]
+  invoices    Invoice[]
+}
+
+model Employee {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  employeeNo  String    @unique
+  department  String
+  title       String
+  phone       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id])
+  attendances Attendance[]
+  tasks       Task[]
+  jobs        ProductionJob[]
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  sku         String    @unique
+  name        String
+  category    String
+  unitPrice   Float     @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orderItems  OrderItem[]
+  quoteItems  QuoteItem[]
+}
+
+model Order {
+  id               String         @id @default(cuid())
+  orderNumber      String         @unique
+  customerName     String
+  productName      String?
+  quantity         Int            @default(1)
+  description      String?
+  priority         String         @default("normal")
+  status           OrderStatus    @default(NEW)
+  totalCost        Float          @default(0)
+  paidAmount       Float          @default(0)
+  expectedDelivery DateTime?
+  deliveryMethod   DeliveryMethod @default(SHIPPING)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  clientId         String?
+
+  client           Client?        @relation(fields: [clientId], references: [id])
+  items            OrderItem[]
+  quotes           Quote[]
+  invoices         Invoice[]
+  jobs             ProductionJob[]
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId      String
+  productId    String?
+  productName  String
+  quantity     Int
+  unitPrice    Float   @default(0)
+  totalPrice   Float   @default(0)
+  material     String?
+  notes        String?
+
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id])
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  quoteNumber String      @unique
+  status      QuoteStatus @default(DRAFT)
+  subtotal    Float
+  tax         Float       @default(0)
+  total       Float
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderId     String?
+  clientId    String?
+
+  order       Order?      @relation(fields: [orderId], references: [id])
+  client      Client?     @relation(fields: [clientId], references: [id])
+  items       QuoteItem[]
+}
+
+model QuoteItem {
+  id          String   @id @default(cuid())
+  quoteId      String
+  productId    String?
+  productName  String
+  quantity     Int
+  unitPrice    Float
+  totalPrice   Float
+
+  quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  status        InvoiceStatus @default(DRAFT)
+  subtotal      Float
+  tax           Float         @default(0)
+  total         Float
+  paidAmount    Float         @default(0)
+  balanceAmount Float         @default(0)
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  orderId       String?
+  clientId      String?
+
+  order         Order?        @relation(fields: [orderId], references: [id])
+  client        Client?       @relation(fields: [clientId], references: [id])
+  payments      Payment[]
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  invoiceId      String
+  amount         Float
+  method         String
+  referenceNo    String?
+  paidAt         DateTime @default(now())
+  notes          String?
+
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Machine {
+  id               String        @id @default(cuid())
+  code             String        @unique
+  name             String
+  model            String?
+  category         String
+  status           MachineStatus @default(WORKING)
+  location         String?
+  maintenancePhone String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  jobs             ProductionJob[]
+}
+
+model ProductionJob {
+  id            String    @id @default(cuid())
+  orderId        String
+  machineId      String?
+  operatorId     String?
+  stage          String    @default("queued")
+  quantityTarget Int       @default(0)
+  quantityDone   Int       @default(0)
+  startedAt      DateTime?
+  endedAt        DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  machine        Machine?  @relation(fields: [machineId], references: [id])
+  operator       Employee? @relation(fields: [operatorId], references: [id])
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  dueDate      DateTime?
+  employeeId   String?
+  relatedType  String?
+  relatedId    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  employee     Employee?    @relation(fields: [employeeId], references: [id])
+}
+
+model Attendance {
+  id          String           @id @default(cuid())
+  employeeId   String
+  day          DateTime         @default(now())
+  checkIn      DateTime?
+  checkOut     DateTime?
+  status       AttendanceStatus @default(PRESENT)
+  notes        String?
+
+  employee     Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  module      String
+  action      String
+  targetId    String?
+  payload     Json?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id])
+}
