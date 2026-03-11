@@ -6,8 +6,17 @@ import { prisma } from "@/lib/prisma"
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "change-this-secret")
 const cookieName = "ubcprint_session"
 
+export type SessionRole = "ADMIN" | "SUPERVISOR" | "SALES" | "DESIGNER" | "ACCOUNTANT" | "OPERATOR" | "CLIENT"
+export type SessionAudience = "client" | "staff" | "admin"
+
+function resolveAudience(role: string): SessionAudience {
+  if (role === "CLIENT") return "client"
+  if (role === "ADMIN") return "admin"
+  return "staff"
+}
+
 export async function createSession(user: { id: string; email: string; role: string; fullName: string }) {
-  const token = await new SignJWT(user)
+  const token = await new SignJWT({ ...user, audience: resolveAudience(user.role) })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
@@ -26,7 +35,7 @@ export async function getSession() {
   if (!token) return null
   try {
     const { payload } = await jwtVerify(token, secret)
-    return payload
+    return payload as { id: string; email: string; role: SessionRole; fullName: string; audience: SessionAudience }
   } catch {
     return null
   }
@@ -38,4 +47,8 @@ export async function authenticate(email: string, password: string) {
   const isValid = await compare(password, user.passwordHash)
   if (!isValid) return null
   return user
+}
+
+export function audienceForRole(role: string): SessionAudience {
+  return resolveAudience(role)
 }
