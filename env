@@ -1,0 +1,3 @@
+DATABASE_URL="postgresql://x:x@localhost:5432/x"
+JWT_SECRET="x"
+APP_URL="http://localhost:3000"

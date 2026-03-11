@@ -30,18 +30,3 @@
 
 ## ملاحظات
 هذه النسخة أقوى كأساس Full Stack، لكن بعض صفحات الواجهة ما زالت تعرض بيانات UI/Mock إلى أن يتم ربطها بالكامل مع الـ APIs.
-
-
-## بيانات الدخول الافتراضية
-- البريد: `admin@example.com`
-- كلمة المرور: `Admin@123456`
-
-## أوامر التشغيل
-```bash
-npm install
-cp .env.example .env
-npm run db:push
-npm run db:seed
-npm run build
-npm start
-```
