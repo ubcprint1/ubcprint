@@ -5,7 +5,7 @@ const protectedPrefixes = ["/dashboard", "/accounting", "/attendance", "/audit",
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   const needsAuth = protectedPrefixes.some(prefix => path === prefix || path.startsWith(prefix + "/")) || path.startsWith("/api/")
-  const publicApi = path.startsWith('/api/health') || path.startsWith('/api/auth/login') || path.startsWith('/api/auth/logout') || path.startsWith('/api/auth/me')
+  const publicApi = path.startsWith('/api/health') || path.startsWith('/api/auth/login') || path.startsWith('/api/auth/logout') || path.startsWith('/api/auth/me') || path.startsWith('/api/client/register') || path.startsWith('/api/public/request-quote') || path.startsWith('/api/public/track-order')
 
   if (needsAuth && !publicApi) {
     const token = request.cookies.get("ubcprint_session")?.value
