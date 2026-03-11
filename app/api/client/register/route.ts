@@ -1,43 +1,28 @@
-import { hash } from 'bcryptjs'
-import { RoleCode } from '@prisma/client'
 import { fail, ok } from '@/lib/api'
 import { prisma } from '@/lib/prisma'
-import { createSession } from '@/lib/auth'
+import { hash } from 'bcryptjs'
+import { RoleCode } from '@prisma/client'
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const fullName = String(body.fullName || '').trim()
+  const name = String(body.name || '').trim()
   const email = String(body.email || '').trim().toLowerCase()
-  const phone = String(body.phone || '').trim()
   const password = String(body.password || '')
+  const phone = String(body.phone || '').trim()
+  const address = String(body.address || '').trim()
 
-  if (!fullName || !email || !phone || !password) return fail('All fields are required', 400)
+  if (!name || !email || !password) return fail('البيانات الأساسية مطلوبة', 400)
 
-  const existingUser = await prisma.user.findUnique({ where: { email } })
-  const existingClient = await prisma.client.findUnique({ where: { email } })
-  if (existingUser || existingClient) return fail('Email already exists', 409)
+  const existing = await prisma.user.findUnique({ where: { email } })
+  if (existing) return fail('البريد مستخدم مسبقًا', 409)
 
   const passwordHash = await hash(password, 10)
-
   const user = await prisma.user.create({
-    data: {
-      fullName,
-      email,
-      passwordHash,
-      role: RoleCode.CLIENT,
-    },
+    data: { fullName: name, email, passwordHash, role: RoleCode.CLIENT },
   })
-
   await prisma.client.create({
-    data: {
-      userId: user.id,
-      name: fullName,
-      email,
-      phone,
-    },
+    data: { userId: user.id, name, email, phone, address },
   })
 
-  await createSession({ id: user.id, email: user.email, role: user.role, fullName: user.fullName })
-
-  return ok({ success: true, redirectTo: '/client/portal' }, 201)
+  return ok({ success: true, message: 'تم إنشاء الحساب بنجاح' }, 201)
 }

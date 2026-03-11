@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 
-export default function LegacyLoginRedirect() {
+export default function LoginRedirect() {
   redirect('/staff/login')
 }

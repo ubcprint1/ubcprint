@@ -1,60 +1,45 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { WebsiteHeader } from "@/components/website-header"
-import { WebsiteFooter } from "@/components/website-footer"
-import { WhatsAppFloat } from "@/components/whatsapp-float"
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function ClientLoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('client@example.com')
-  const [password, setPassword] = useState('Admin@123456')
-  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const redirectTo = searchParams.get('redirect') || '/client/portal'
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, audience: 'client' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'تعذر تسجيل الدخول')
-      router.push('/client/portal')
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول')
-    } finally {
+    setError('')
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, audience: 'client' }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || 'تعذر تسجيل الدخول')
       setLoading(false)
+      return
     }
+    router.push(redirectTo)
+    router.refresh()
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1A2E42]">
-      <WebsiteHeader />
-      <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mb-8 text-center">
-            <h1 className="text-5xl font-black">دخول العميل</h1>
-            <p className="mt-3 text-xl text-slate-600">تابع طلباتك، وشاهد الفواتير، وتواصل مع فريق UBC Print.</p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="h-14 w-full rounded-xl border border-slate-300 px-4" placeholder="البريد الإلكتروني" type="email" required />
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="h-14 w-full rounded-xl border border-slate-300 px-4" placeholder="كلمة المرور" required />
-            {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
-            <button disabled={loading} className="h-14 w-full rounded-xl bg-[#097D77] text-lg font-bold text-white disabled:opacity-60">{loading ? 'جاري الدخول...' : 'دخول الحساب'}</button>
-          </form>
-          <div className="mt-6 text-center text-slate-600">ليس لديك حساب؟ <Link href="/client/register" className="font-bold text-[#223982]">أنشئ حسابًا جديدًا</Link></div>
-        </div>
-      </main>
-      <WebsiteFooter />
-      <WhatsAppFloat />
-    </div>
+    <main className="mx-auto max-w-md px-4 py-20">
+      <h1 className="mb-6 text-3xl font-bold text-[#1A2E42]">دخول العميل</h1>
+      <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <input className="w-full rounded-xl border p-3" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="w-full rounded-xl border p-3" type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} />
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <button className="w-full rounded-xl bg-[#097D77] px-4 py-3 text-white" disabled={loading}>{loading ? 'جاري الدخول...' : 'تسجيل الدخول'}</button>
+      </form>
+    </main>
   )
 }

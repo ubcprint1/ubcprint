@@ -1,83 +1,37 @@
-import { DeliveryMethod, OrderStatus } from '@prisma/client'
 import { fail, ok } from '@/lib/api'
 import { prisma } from '@/lib/prisma'
 
-const deliveryMap: Record<string, DeliveryMethod> = {
-  SHIPPING: 'SHIPPING',
-  PICKUP: 'PICKUP',
-}
-
-function generateOrderNumber() {
-  return `ORD-${Date.now().toString().slice(-8)}`
+function nextOrderNumber() {
+  return `ORD-${Date.now().toString().slice(-6)}`
 }
 
 export async function POST(request: Request) {
   const body = await request.json()
-
-  const customerName = String(body.customerName || '').trim()
-  const phone = String(body.phone || '').trim()
-  const email = String(body.email || '').trim().toLowerCase()
-  const description = String(body.description || '').trim()
+  const customerName = String(body.customerName || body.name || '').trim()
+  const productName = String(body.productName || body.projectType || 'مشروع طباعة').trim()
   const quantity = Number(body.quantity || 1)
-  const productName = String(body.productName || 'مشروع طباعة مخصص').trim()
-  const deliveryMethod = deliveryMap[String(body.deliveryMethod || 'SHIPPING')] || 'SHIPPING'
-  const paymentMethod = String(body.paymentMethod || 'cash')
-  const machine = String(body.machine || '')
-  const shippingAddress = String(body.shippingAddress || '').trim()
-  const designHelp = Boolean(body.designHelp)
+  const description = String(body.description || '').trim()
+  const email = String(body.email || '').trim().toLowerCase()
 
-  if (!customerName || !phone || !description) return fail('Name, phone and project description are required', 400)
+  if (!customerName) return fail('اسم العميل مطلوب', 400)
 
-  let client = null
+  let clientId: string | undefined
   if (email) {
-    client = await prisma.client.findUnique({ where: { email } })
-    if (!client) {
-      client = await prisma.client.create({
-        data: {
-          name: customerName,
-          email,
-          phone,
-          address: shippingAddress || undefined,
-        },
-      })
-    }
+    const client = await prisma.client.findUnique({ where: { email } })
+    clientId = client?.id
   }
 
   const order = await prisma.order.create({
     data: {
-      orderNumber: generateOrderNumber(),
+      orderNumber: nextOrderNumber(),
       customerName,
       productName,
       quantity,
-      description: JSON.stringify({
-        projectDescription: description,
-        paymentMethod,
-        machine,
-        shippingAddress,
-        designHelp,
-      }),
-      deliveryMethod,
-      status: OrderStatus.NEW,
-      clientId: client?.id,
-      items: {
-        create: [
-          {
-            productName,
-            quantity,
-            totalPrice: 0,
-            unitPrice: 0,
-            notes: description,
-          },
-        ],
-      },
+      description,
+      clientId,
+      status: 'PRICING',
     },
-    include: { items: true },
   })
 
-  return ok({
-    success: true,
-    orderNumber: order.orderNumber,
-    orderId: order.id,
-    message: 'Request submitted successfully',
-  }, 201)
+  return ok({ success: true, orderNumber: order.orderNumber, id: order.id }, 201)
 }

@@ -1,22 +1,27 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+"use client"
+
+import { useRouter } from "next/navigation"
+import { ReportsArchive } from "@/components/reports-archive"
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
 
 export default function ReportsPage() {
+  const router = useRouter()
   return (
-    <div className="space-y-6" dir="rtl">
-      <Card className="rounded-2xl">
-        <CardHeader>
-          <CardTitle>التقارير</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <p>تم تجهيز صفحة التقارير كبداية مستقرة. التقارير التفصيلية يمكن فتحها من روابط الأقسام الحالية.</p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/accounting/reports/expenses" className="rounded-xl border px-4 py-2 text-foreground">تقارير المصروفات</Link>
-            <Link href="/accounting" className="rounded-xl border px-4 py-2 text-foreground">لوحة المحاسبة</Link>
-            <Link href="/dashboard" className="rounded-xl border px-4 py-2 text-foreground">العودة للوحة التحكم</Link>
+    <div className="min-h-screen bg-background" dir="rtl">
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">أرشيف التقارير</h1>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </header>
+      <main className="container mx-auto px-6 py-8">
+        <ReportsArchive />
+      </main>
     </div>
   )
 }

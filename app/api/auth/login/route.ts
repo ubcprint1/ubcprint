@@ -1,5 +1,5 @@
 import { fail, ok } from '@/lib/api'
-import { authenticate, createSession, audienceForRole, type SessionAudience } from '@/lib/auth'
+import { authenticate, audienceForRole, createSession, type SessionAudience } from '@/lib/auth'
 
 const audienceRedirect: Record<SessionAudience, string> = {
   client: '/client/portal',
@@ -19,7 +19,6 @@ export async function POST(request: Request) {
   if (!user) return fail('Invalid credentials', 401)
 
   const actualAudience = audienceForRole(user.role)
-
   if (requestedAudience && requestedAudience !== actualAudience) {
     return fail('هذا الحساب غير مخصص لهذا المسار', 403)
   }

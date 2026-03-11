@@ -1,26 +1,6 @@
-# Access Control Structure
+Client login: /client/login
+Staff login: /staff/login
+Admin login: /admin/login
 
-## Public client website
-- `/`
-- `/products`
-- `/design`
-- `/request-quote`
-- `/track-order`
-- `/client/login`
-- `/client/register`
-- `/client/portal`
-
-## Staff area
-- `/staff/login`
-- `/staff/dashboard`
-- legacy internal routes like `/dashboard`, `/orders`, `/accounting` are treated as staff routes
-
-## Admin area
-- `/admin/login`
-- `/admin/dashboard`
-
-## Rules
-- Client accounts can only access client routes.
-- Staff accounts can only access staff and legacy internal routes.
-- Admin accounts can access admin routes and internal routes.
-- `/login` now redirects to `/staff/login`.
+Client can browse public website while logged in.
+Staff and admin use separate dashboards and protected routes.
