@@ -13,6 +13,7 @@ const publicRoutes = new Set([
   "/client/login",
   "/client/register",
   "/track-order",
+  "/login",
 ])
 
 export function AppShell({ children }: { children: React.ReactNode }) {
