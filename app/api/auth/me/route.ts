@@ -19,6 +19,7 @@ export async function GET() {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      audience: session.audience,
       client: user.client,
       employee: user.employee,
     },
