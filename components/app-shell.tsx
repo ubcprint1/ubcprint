@@ -4,30 +4,37 @@ import { usePathname } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AppTopbar } from "@/components/app-topbar"
 
-const publicPrefixes = [
-  "/",
-  "/about",
-  "/blog",
-  "/careers",
-  "/contact",
-  "/pricing",
-  "/client/login",
-  "/client/register",
-  "/track-order",
-  "/products",
-  "/help",
-  "/design",
-  "/request-quote",
-  "/login",
-  "/shipping",
-  "/returns",
+const internalPrefixes = [
+  "/dashboard",
+  "/accounting",
+  "/attendance",
+  "/audit",
+  "/inventory",
+  "/machines",
+  "/orders",
+  "/reports",
+  "/settings",
+  "/tasks",
+  "/employees",
+  "/customers",
+  "/production",
+  "/staff/dashboard",
+  "/staff/orders",
+  "/staff/production",
+  "/staff/accounting",
+  "/staff/design",
+  "/admin/dashboard",
+  "/admin/products",
+  "/admin/offers",
+  "/admin/pricing",
+  "/admin/users",
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isPublic = publicPrefixes.some((route) => route === "/" ? pathname === "/" : pathname.startsWith(route))
+  const isInternal = internalPrefixes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
-  if (isPublic) {
+  if (!isInternal) {
     return <>{children}</>
   }
 

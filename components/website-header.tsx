@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Headset, LogIn, BriefcaseBusiness, Palette, Menu, X } from "lucide-react"
+import { ShoppingBag, Headset, LogIn, BriefcaseBusiness, ShieldCheck, Menu, X } from "lucide-react"
 import { useState } from "react"
 
 const navLinks = [
@@ -20,7 +20,13 @@ export function WebsiteHeader() {
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <Link href="/login" className="hidden sm:block">
+          <Link href="/admin/login" className="hidden sm:block">
+            <Button variant="ghost" className="gap-2 rounded-full border border-slate-200 text-slate-700">
+              <ShieldCheck className="h-4 w-4" />
+              دخول الأدمن
+            </Button>
+          </Link>
+          <Link href="/staff/login" className="hidden sm:block">
             <Button variant="ghost" className="gap-2 rounded-full border border-slate-200 text-slate-700">
               <BriefcaseBusiness className="h-4 w-4" />
               دخول الموظفين
@@ -29,7 +35,7 @@ export function WebsiteHeader() {
           <Link href="/client/login" className="hidden sm:block">
             <Button variant="ghost" className="gap-2 text-slate-700">
               <LogIn className="h-4 w-4" />
-              تسجيل الدخول
+              دخول العميل
             </Button>
           </Link>
           <Link href="/help" className="hidden sm:block">
@@ -73,10 +79,13 @@ export function WebsiteHeader() {
               المساعدة
             </Link>
             <Link href="/client/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
-              تسجيل الدخول
+              دخول العميل
             </Link>
-            <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
+            <Link href="/staff/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
               دخول الموظفين
+            </Link>
+            <Link href="/admin/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
+              دخول الأدمن
             </Link>
           </div>
         </div>
