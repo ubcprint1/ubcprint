@@ -2,110 +2,85 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Printer, ShoppingBag, Phone, Menu, X, Package } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useCartStore } from "@/lib/cart-store"
+import { ShoppingBag, Headset, LogIn, BriefcaseBusiness, Palette, Menu, X } from "lucide-react"
+import { useState } from "react"
+
+const navLinks = [
+  { href: "/products", label: "المنتجات المخصصة" },
+  { href: "/products/apparel", label: "الملابس" },
+  { href: "/products/promo", label: "المنتجات الترويجية" },
+  { href: "/products/events", label: "المجموعات والفعاليات" },
+  { href: "/design", label: "استوديو التصميم" },
+]
 
 export function WebsiteHeader() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const { getTotalItems } = useCartStore()
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
-  const cartItemsCount = mounted ? getTotalItems() : 0
-
-  const navLinks = [
-    { href: "/products", label: "المنتجات المخصصة" },
-    { href: "/products/apparel", label: "الملابس" },
-    { href: "/products/promo", label: "المنتجات الترويجية" },
-    { href: "/products/events", label: "المجموعات والفعاليات" },
-    { href: "/design", label: "استوديو التصميم" },
-  ]
+  const [open, setOpen] = useState(false)
 
   return (
-    <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <Printer className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-900">UBC Print</span>
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="hidden sm:block">
+            <Button variant="ghost" className="gap-2 rounded-full border border-slate-200 text-slate-700">
+              <BriefcaseBusiness className="h-4 w-4" />
+              دخول الموظفين
+            </Button>
           </Link>
+          <Link href="/client/login" className="hidden sm:block">
+            <Button variant="ghost" className="gap-2 text-slate-700">
+              <LogIn className="h-4 w-4" />
+              تسجيل الدخول
+            </Button>
+          </Link>
+          <Link href="/help" className="hidden sm:block">
+            <Button variant="ghost" className="gap-2 text-slate-700">
+              <Headset className="h-4 w-4" />
+              المساعدة
+            </Button>
+          </Link>
+        </div>
 
-          <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden items-center gap-7 lg:flex">
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="text-sm font-medium text-slate-700 transition hover:text-[#223982]">
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 text-[#1A2E42]">
+            <span className="text-2xl font-black">UBC Print</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#223982] text-white">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+          </Link>
+          <button className="rounded-lg p-2 text-slate-700 lg:hidden" onClick={() => setOpen(!open)}>
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="border-t border-slate-200 bg-white lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6 lg:px-8">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-slate-700 hover:text-blue-600 font-medium transition-colors"
-              >
+              <Link key={link.href} href={link.href} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
                 {link.label}
               </Link>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link href="/track-order">
-              <Button variant="ghost" size="sm" className="hidden sm:flex gap-2">
-                <Package className="h-4 w-4" />
-                متابعة طلبك
-              </Button>
+            <Link href="/help" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
+              المساعدة
             </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="hidden md:flex gap-2">
-                <Phone className="h-4 w-4" />
-                المساعدة
-              </Button>
+            <Link href="/client/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
+              تسجيل الدخول
             </Link>
-            <Link href="/client/login">
-              <Button variant="ghost" size="sm">
-                تسجيل الدخول
-              </Button>
+            <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => setOpen(false)}>
+              دخول الموظفين
             </Link>
-            <Link href="/cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingBag className="h-5 w-5" />
-                {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                    {cartItemsCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t py-4">
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-slate-700 hover:text-blue-600 font-medium py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-
-            </nav>
-          </div>
-        )}
-      </div>
+      )}
     </header>
   )
 }

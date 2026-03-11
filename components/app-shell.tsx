@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AppTopbar } from "@/components/app-topbar"
 
-const publicRoutes = new Set([
+const publicPrefixes = [
+  "/",
   "/about",
   "/blog",
   "/careers",
@@ -13,12 +14,18 @@ const publicRoutes = new Set([
   "/client/login",
   "/client/register",
   "/track-order",
+  "/products",
+  "/help",
+  "/design",
+  "/request-quote",
   "/login",
-])
+  "/shipping",
+  "/returns",
+]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isPublic = publicRoutes.has(pathname)
+  const isPublic = publicPrefixes.some((route) => route === "/" ? pathname === "/" : pathname.startsWith(route))
 
   if (isPublic) {
     return <>{children}</>
