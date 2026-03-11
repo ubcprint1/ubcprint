@@ -1,27 +1,32 @@
-# UBC Print
+# UBC Print Full Stack
 
-مشروع UBC Print يجمع بين:
-- موقع العميل العام
-- بوابة العميل
-- لوحة الموظفين
-- لوحة الأدمن
+نسخة محسنة من مشروع المطبعة مع Frontend واسع + Backend foundation كامل.
 
-## روابط الدخول
-- العميل: `/client/login`
-- الموظفون: `/staff/login`
-- الأدمن: `/admin/login`
+## التشغيل
+1. انسخ `.env.example` إلى `.env`
+2. ثبت الحزم: `npm install`
+3. جهز القاعدة: `npm run db:push`
+4. أنشئ بيانات تجريبية: `npm run db:seed`
+5. شغل التطوير: `npm run dev`
 
-## بيانات تجريبية
-- Admin: `admin@example.com` / `Admin@123456`
-- Staff: `sales@example.com` / `Admin@123456`
-- Client: `client@example.com` / `Admin@123456`
+## بيانات الدخول
+- admin@example.com / Admin@123456
+- sales@example.com / Admin@123456
+- operator@example.com / Admin@123456
 
-## تشغيل المشروع
-```bash
-npm install
-cp .env.example .env
-npm run db:push
-npm run db:seed
-npm run build
-npm start
-```
+## الـ Backend الموجود
+- Auth API
+- Orders CRUD
+- Customers CRUD
+- Quotes CRUD
+- Invoices CRUD + payments
+- Machines CRUD
+- Employees API
+- Tasks API
+- Products API
+- Attendance API
+- Production Jobs API
+- Dashboard/Reports summary
+
+## ملاحظات
+هذه النسخة أقوى كأساس Full Stack، لكن بعض صفحات الواجهة ما زالت تعرض بيانات UI/Mock إلى أن يتم ربطها بالكامل مع الـ APIs.
