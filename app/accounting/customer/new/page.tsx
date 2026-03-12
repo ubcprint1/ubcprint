@@ -1,147 +1,67 @@
-"use client"
+import Link from 'next/link'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { createClientAction } from '../actions'
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card } from "@/components/ui/card"
-import { ArrowRight, Save } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-
-export default function NewCustomerPage() {
-  const router = useRouter()
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    type: "",
-    taxId: "",
-    notes: "",
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: حفظ العميل
-    alert("تم إضافة العميل بنجاح")
-    router.push("/accounting/customers")
-  }
+export default async function NewCustomerPage({ searchParams }: { searchParams?: { error?: string } }) {
+  const session = await getSession()
+  if (!session || (session.audience !== 'admin' && session.audience !== 'staff')) redirect('/staff/login')
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/accounting">
-              <Button variant="ghost" size="icon">
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold text-foreground">إضافة عميل جديد</h1>
+    <main className="mx-auto max-w-3xl px-4 py-10" dir="rtl">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-[#1A2E42]">إضافة عميل جديد</h1>
+        <Link href="/accounting/customers" className="rounded-xl border px-4 py-2">رجوع</Link>
+      </div>
+
+      {searchParams?.error ? (
+        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {searchParams.error === 'missing' && 'اسم العميل مطلوب.'}
+          {searchParams.error === 'email' && 'بريد العميل مستخدم مسبقاً.'}
+          {searchParams.error === 'portal' && 'لإنشاء البوابة لازم بريد وكلمة مرور.'}
+          {searchParams.error === 'userexists' && 'يوجد مستخدم مسبقاً بنفس البريد.'}
+        </div>
+      ) : null}
+
+      <form action={createClientAction} className="grid gap-4 rounded-2xl border bg-white p-6 shadow-sm md:grid-cols-2">
+        <div>
+          <label className="mb-2 block text-sm font-medium">اسم العميل</label>
+          <input name="name" className="w-full rounded-xl border p-3" required />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">اسم الشركة</label>
+          <input name="companyName" className="w-full rounded-xl border p-3" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">البريد الإلكتروني</label>
+          <input name="email" type="email" className="w-full rounded-xl border p-3" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">الجوال</label>
+          <input name="phone" className="w-full rounded-xl border p-3" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">المدينة</label>
+          <input name="city" className="w-full rounded-xl border p-3" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">العنوان</label>
+          <input name="address" className="w-full rounded-xl border p-3" />
+        </div>
+        <div className="md:col-span-2 rounded-2xl border border-slate-200 p-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <input name="createPortal" type="checkbox" />
+            إنشاء حساب دخول للعميل في البوابة
+          </label>
+          <div className="mt-3">
+            <label className="mb-2 block text-sm font-medium">كلمة مرور البوابة</label>
+            <input name="password" type="password" className="w-full rounded-xl border p-3" placeholder="اختياري إذا ما فعلت البوابة" />
           </div>
         </div>
-      </header>
-
-      <main className="container mx-auto max-w-3xl px-6 py-8">
-        <form onSubmit={handleSubmit}>
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label>اسم العميل</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="اسم العميل أو الشركة"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>نوع العميل</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر نوع العميل" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">فرد</SelectItem>
-                      <SelectItem value="company">شركة</SelectItem>
-                      <SelectItem value="advertising">مكتب دعاية</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label>رقم الهاتف</Label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="01xxxxxxxxx"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>البريد الإلكتروني</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@example.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>العنوان</Label>
-                <Textarea
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="العنوان الكامل"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label>الرقم الضريبي (اختياري)</Label>
-                <Input
-                  value={formData.taxId}
-                  onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                  placeholder="الرقم الضريبي للعميل"
-                />
-              </div>
-
-              <div>
-                <Label>ملاحظات</Label>
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="ملاحظات إضافية عن العميل"
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-4">
-              <Link href="/accounting/customers">
-                <Button type="button" variant="outline">
-                  إلغاء
-                </Button>
-              </Link>
-              <Button type="submit" className="gap-2">
-                <Save className="h-4 w-4" />
-                حفظ العميل
-              </Button>
-            </div>
-          </Card>
-        </form>
-      </main>
-    </div>
+        <div className="md:col-span-2">
+          <button className="rounded-xl bg-[#223982] px-5 py-3 text-white">حفظ العميل</button>
+        </div>
+      </form>
+    </main>
   )
 }
