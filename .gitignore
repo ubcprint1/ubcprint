@@ -2,6 +2,3 @@ node_modules
 .next
 .env
 .env.test
-.env
-.next
-node_modules
