@@ -1,52 +1,175 @@
-import Link from 'next/link'
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { createProductAction } from '../actions'
+'use client'
 
-export default async function AdminProductNewPage({
-  searchParams,
-}: {
-  searchParams?: { error?: string }
-}) {
-  const session = await getSession()
-  if (!session || session.audience !== 'admin') redirect('/admin/login')
+import Link from 'next/link'
+import { useState } from 'react'
+
+const groups = [
+  { value: 'custom', label: 'المنتجات المخصصة' },
+  { value: 'apparel', label: 'الملابس' },
+  { value: 'promo', label: 'المنتجات الترويجية' },
+  { value: 'events', label: 'المجموعات والفعاليات' },
+]
+
+export default function AdminProductNewPage() {
+  const [form, setForm] = useState({
+    name: '',
+    sku: '',
+    category: 'custom',
+    description: '',
+    imageUrl: '',
+    unitPrice: '',
+    isActive: true,
+  })
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...form,
+          unitPrice: Number(form.unitPrice || 0),
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data?.error || 'تعذر حفظ المنتج')
+        return
+      }
+
+      setMessage('تمت إضافة المنتج بنجاح')
+      setForm({
+        name: '',
+        sku: '',
+        category: 'custom',
+        description: '',
+        imageUrl: '',
+        unitPrice: '',
+        isActive: true,
+      })
+    } catch {
+      setError('حدث خطأ أثناء الحفظ')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10" dir="rtl">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#1A2E42]">إضافة منتج</h1>
-        <Link href="/admin/products" className="rounded-xl border px-4 py-2">رجوع</Link>
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-[#1A2E42]">إضافة منتج جديد</h1>
+          <p className="mt-2 text-sm text-slate-500">أضف المنتج واربطه مباشرة بالمجموعة المناسبة داخل الموقع.</p>
+        </div>
+        <Link href="/admin/products" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">
+          رجوع
+        </Link>
       </div>
 
-      {searchParams?.error ? (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-          {searchParams.error === 'missing' && 'أكمل الحقول المطلوبة.'}
-          {searchParams.error === 'exists' && 'يوجد منتج بنفس الاسم أو SKU.'}
+      <form className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" onSubmit={handleSubmit}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">اسم المنتج</label>
+            <input
+              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-[#223982]"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="مثال: تيشيرت قطن مطبوع"
+              required
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">SKU</label>
+            <input
+              className="w-full rounded-xl border border-slate-300 p-3 uppercase outline-none focus:border-[#223982]"
+              value={form.sku}
+              onChange={(e) => setForm({ ...form, sku: e.target.value.toUpperCase() })}
+              placeholder="TSHIRT-001"
+              required
+            />
+          </div>
         </div>
-      ) : null}
 
-      <form action={createProductAction} className="space-y-4 rounded-2xl border bg-white p-6 shadow-sm">
-        <div>
-          <label className="mb-2 block text-sm font-medium">اسم المنتج</label>
-          <input name="name" className="w-full rounded-xl border p-3" required />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">مجموعة العرض في الموقع</label>
+            <select
+              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-[#223982]"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+            >
+              {groups.map((group) => (
+                <option key={group.value} value={group.value}>{group.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">سعر المنتج</label>
+            <input
+              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-[#223982]"
+              value={form.unitPrice}
+              onChange={(e) => setForm({ ...form, unitPrice: e.target.value })}
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0"
+              required
+            />
+          </div>
         </div>
+
         <div>
-          <label className="mb-2 block text-sm font-medium">SKU</label>
-          <input name="sku" className="w-full rounded-xl border p-3" required />
+          <label className="mb-2 block text-sm font-medium text-slate-700">رابط صورة المنتج</label>
+          <input
+            className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-[#223982]"
+            value={form.imageUrl}
+            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            type="url"
+            placeholder="https://example.com/product-image.jpg"
+          />
+          <p className="mt-2 text-xs text-slate-500">حالياً يتم استخدام رابط صورة خارجي لتسريع الإطلاق.</p>
         </div>
+
         <div>
-          <label className="mb-2 block text-sm font-medium">التصنيف</label>
-          <input name="category" className="w-full rounded-xl border p-3" required />
+          <label className="mb-2 block text-sm font-medium text-slate-700">وصف مختصر</label>
+          <textarea
+            className="min-h-[120px] w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-[#223982]"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="اكتب وصفًا مختصرًا يظهر داخل كروت المنتجات"
+          />
         </div>
-        <div>
-          <label className="mb-2 block text-sm font-medium">السعر</label>
-          <input name="unitPrice" type="number" step="0.01" min="0" className="w-full rounded-xl border p-3" defaultValue="0" required />
-        </div>
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input name="isActive" type="checkbox" defaultChecked />
-          المنتج نشط
+
+        <label className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={form.isActive}
+            onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+          />
+          المنتج مفعل ويظهر في الموقع
         </label>
-        <button className="rounded-xl bg-[#223982] px-5 py-3 text-white">حفظ المنتج</button>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button disabled={loading} className="rounded-xl bg-[#223982] px-5 py-3 text-sm font-medium text-white disabled:opacity-60">
+            {loading ? 'جارٍ الحفظ...' : 'حفظ المنتج'}
+          </button>
+          <Link href="/products" className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700">
+            معاينة صفحة المنتجات
+          </Link>
+        </div>
+
+        {message ? <p className="text-sm font-medium text-emerald-600">{message}</p> : null}
+        {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
       </form>
     </main>
   )

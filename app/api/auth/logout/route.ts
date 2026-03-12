@@ -1,22 +1,24 @@
-import { clearSession } from '@/lib/auth'
-import { ok } from '@/lib/api'
 import { NextResponse } from 'next/server'
+import { clearSession } from '@/lib/auth'
 
 export async function POST(request: Request) {
   await clearSession()
 
   const contentType = request.headers.get('content-type') || ''
+  let redirectTo = '/'
 
-  if (contentType.includes('application/json')) {
-    return ok({ success: true })
+  if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+    const formData = await request.formData()
+    redirectTo = String(formData.get('redirectTo') || '/').trim() || '/'
+    return NextResponse.redirect(new URL(redirectTo, request.url))
   }
 
-  let redirectTo = '/'
   try {
-    const formData = await request.formData()
-    const requested = String(formData.get('redirectTo') || '').trim()
-    if (requested.startsWith('/')) redirectTo = requested
-  } catch {}
+    const body = await request.json()
+    redirectTo = String(body?.redirectTo || '/').trim() || '/'
+  } catch {
+    redirectTo = '/'
+  }
 
-  return NextResponse.redirect(new URL(redirectTo, request.url), { status: 303 })
+  return NextResponse.json({ success: true, redirectTo })
 }
